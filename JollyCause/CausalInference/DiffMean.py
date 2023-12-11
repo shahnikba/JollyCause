@@ -2,8 +2,8 @@ import pandas as pd
 import statsmodels as st
 import numpy as np
 df = pd.read_csv("https://docs.google.com/uc?id=1AQva5-vDlgBcM_Tv9yrO8yMYRfQJgqo_&export=download")
-def simple_causality(df,w,y):
 
+def simple_causality(df,w,y):
     # Only valid in the randomized setting. Do not use in observational settings.
     Y = df[y]
     W = df[w]
