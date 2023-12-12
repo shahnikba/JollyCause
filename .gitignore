@@ -5,6 +5,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+tmp/
 bin/
 build/
 develop-eggs/
@@ -18,6 +19,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+.idea/
 
 # Installer logs
 pip-log.txt
@@ -50,4 +52,4 @@ docs/_build/
 
 #Jupyter stuff:
 checkpoints
-
+.ipynb_checkpoints
