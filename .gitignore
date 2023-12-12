@@ -53,3 +53,7 @@ docs/_build/
 #Jupyter stuff:
 checkpoints
 .ipynb_checkpoints
+
+
+#Shahram's staff
+JollyCause/jollycause/
