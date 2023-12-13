@@ -136,10 +136,10 @@ def AIPW(df,treatment:str,covariates:list):
     print(AIPW_results)
 
 
-df = pd.read_csv("https://docs.google.com/uc?id=1AQva5-vDlgBcM_Tv9yrO8yMYRfQJgqo_&export=download")
+#df = pd.read_csv("https://docs.google.com/uc?id=1AQva5-vDlgBcM_Tv9yrO8yMYRfQJgqo_&export=download")
 #ate_ls_model(df,'w','y')
 #ate_ls_model(df,'w','y',hc=False)
 #ate_diff_mean(df,'w','y')
 #propensity_score(df,'w',['educ','polviews','age'])
 #IPW(df,'w',['educ','polviews','age'])
-AIPW(df,'w',['educ','polviews','age'])
+#AIPW(df,'w',['educ','polviews','age'])
