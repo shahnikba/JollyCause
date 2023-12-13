@@ -63,29 +63,29 @@ def propensity_score(df,treatment:str,covariates:list,inplace=False):
         df['propensity_score'] = Propensity_score
 
     # Display the DataFrame with propensity scores
-    print(Propensity_score)
+    return Propensity_score
 
 def IPW(df,treatment:str,covariates:list):
-    propensity_score(df,treatment,covariates,inplace=True)
-    treatment_group = df[df[treatment] == 1]
-    control_group = df[df[treatment] == 0]
+    df1=df.copy()
+    df1['propensity_score']=propensity_score(df1,treatment,covariates)
+    treatment_group = df1[df1[treatment] == 1]
+    control_group = df1[df1[treatment] == 0]
 
     # Calculate weights
     treatment_weights = 1 / treatment_group['propensity_score']
     control_weights = 1 / (1 - control_group['propensity_score'])
 
     # Combine treatment and control weights
-    df['weights'] = pd.concat([treatment_weights, control_weights])
+    df1['weights'] = pd.concat([treatment_weights, control_weights])
 
     # Calculate inverse propensity-weighted estimator
-    df['weighted_outcome'] = df['y'] * df['weights']
+    df1['weighted_outcome'] = df1['y'] * df1['weights']
 
     # Calculate the average treatment effect
-    ate_est = df['weighted_outcome'].mean()
+    ate_est = df1['weighted_outcome'].mean()
 
-    print(f"Estimated Average Treatment Effect: {ate_est:.4f}")
 
-    weighted_ols = sm.WLS(df['y'], sm.add_constant(df[treatment]), weights=df['weights']).fit()
+    weighted_ols = sm.WLS(df1['y'], sm.add_constant(df1[treatment]), weights=df1['weights']).fit()
     coef_estimate=pd.DataFrame(ols.conf_int()).iloc[1,0]
     std_error = weighted_ols.bse[treatment]
     t_stat = weighted_ols.tvalues[treatment]
@@ -99,9 +99,47 @@ def IPW(df,treatment:str,covariates:list):
     }
     print(IPW_results)
 
-#df = pd.read_csv("https://docs.google.com/uc?id=1AQva5-vDlgBcM_Tv9yrO8yMYRfQJgqo_&export=download")
+
+
+def AIPW(df,treatment:str,covariates:list):
+    df1=df.copy()
+    df1['propensity_score']=propensity_score(df1,treatment,covariates)
+    treatment_group = df1[df1[treatment] == 1]
+    control_group = df1[df1[treatment] == 0]
+
+    # Calculate weights
+    treatment_weights = 1 / treatment_group['propensity_score']
+    control_weights = 1 / (1 - control_group['propensity_score'])
+
+    # Combine treatment and control weights
+    df1['weights'] = pd.concat([treatment_weights, control_weights])
+
+    # Calculate inverse propensity-weighted estimator
+    X_augmented = sm.add_constant(df1[covariates + [treatment]])
+
+    # Calculate augmented inverse propensity-weighted estimator
+    weighted_ols = sm.WLS(df1['y'], X_augmented, weights=df1['weights']).fit()
+
+    # Extract results
+    ate_est = weighted_ols.params[treatment]
+    std_error = weighted_ols.bse[treatment]
+    t_stat = weighted_ols.tvalues[treatment]
+    p_value = weighted_ols.pvalues[treatment]
+
+    AIPW_results = {
+        'estimate': ate_est,
+        'std_error': std_error,
+        't_stat': t_stat,
+        'p_value': p_value
+    }
+
+    print(AIPW_results)
+
+
+df = pd.read_csv("https://docs.google.com/uc?id=1AQva5-vDlgBcM_Tv9yrO8yMYRfQJgqo_&export=download")
 #ate_ls_model(df,'w','y')
 #ate_ls_model(df,'w','y',hc=False)
 #ate_diff_mean(df,'w','y')
 #propensity_score(df,'w',['educ','polviews','age'])
 #IPW(df,'w',['educ','polviews','age'])
+AIPW(df,'w',['educ','polviews','age'])
