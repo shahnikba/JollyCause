@@ -1,8 +1,9 @@
 
 # -*- coding:utf-8 -*-
 """Setuptools of jollycause"""
-import setuptools
 import sys
+import setuptools
+
 
 #from xx import __version__
 __version__ = "0.0.1"
