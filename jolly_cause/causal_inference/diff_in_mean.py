@@ -3,6 +3,7 @@ import pandas as pd
 import statsmodels.api as sm
 import numpy as np
 import scipy.stats
+from sklearn.neighbors import NearestNeighbors
 
 
 def ate_diff_mean(data, treatment, outcome):
@@ -141,3 +142,55 @@ def aipw(data, outcome:str ,treatment: str, covariates: list):
 #propensity_score(df,'w',['educ','polviews','age'])
 #ipw(df,'y','w',['age'])
 #aipw(df,'y','w',['educ','polviews','age'])
+
+
+
+
+def propensity_score_matching(data, treatment_col, covariates):
+    """
+    Perform propensity score matching.
+
+    Parameters:
+    - data: DataFrame containing the data
+    - treatment_col: Name of the column indicating treatment/control status
+    - covariates: List of covariates used for propensity score calculation
+    - caliper: Caliper width for matching (default is 0.05)
+
+    Returns:
+    - matched_data: DataFrame containing the matched data
+    """
+
+    # Calculate propensity scores
+    propensity_scores = propensity_score(data, treatment_col, covariates)
+
+    # Add propensity scores to the original DataFrame
+    data['propensity_score'] = propensity_scores
+
+    # Separate treated and control groups
+    treated_data = data[data[treatment_col] == 1]
+    control_data = data[data[treatment_col] == 0]
+
+    # Initialize matched data
+    matched_units = []
+
+
+    knn_model = NearestNeighbors(n_neighbors=1)
+    knn_model.fit(control_data[['propensity_score']])
+
+    # Find nearest neighbors for each treated unit
+    _, indices = knn_model.kneighbors(treated_data[['propensity_score']])
+
+    # Initialize matched data
+
+    # Iterate through each treated unit and its nearest neighbor(s)
+    for i, treated_unit in enumerate(treated_data.iterrows()):
+        treated_unit = treated_unit[1]
+        nearest_indices = indices[i]
+
+        # Add the treated unit and its nearest neighbor(s) to the result
+        matched_units.append(treated_unit)
+        matched_units.append(control_data.iloc[nearest_indices].squeeze())
+
+    matched_data = pd.DataFrame(matched_units)
+
+    return matched_data
