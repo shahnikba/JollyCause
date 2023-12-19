@@ -135,17 +135,6 @@ def aipw(data, outcome:str ,treatment: str, covariates: list):
     print(aipw_results)
 
 
-#df = pd.read_csv("https://docs.google.com/uc?id=1AQva5-vDlgBcM_Tv9yrO8yMYRfQJgqo_&export=download")
-#ate_ls_model(df,'w','y')
-#ate_ls_model(df,'w','y',hc_test=False)
-#ate_diff_mean(df,'w','y')
-#propensity_score(df,'w',['educ','polviews','age'])
-#ipw(df,'y','w',['age'])
-#aipw(df,'y','w',['educ','polviews','age'])
-
-
-
-
 def propensity_score_matching(data, treatment_col, covariates):
     """
     Perform propensity score matching.
@@ -194,3 +183,74 @@ def propensity_score_matching(data, treatment_col, covariates):
     matched_data = pd.DataFrame(matched_units)
 
     return matched_data
+
+
+
+def propensity_score_stratification(data, treatment_col, covariates, num_strata=5):
+    """
+    Perform propensity score stratification.
+
+    Parameters:
+    - data: DataFrame containing the data
+    - treatment_col: Name of the column indicating treatment/control status
+    - covariates: List of covariates used for propensity score calculation
+    - num_strata: Number of strata to create (default is 5)
+
+    Returns:
+    - stratified_data: DataFrame containing the stratified data
+    """
+
+    # Calculate propensity scores
+    propensity_scores = propensity_score(data, treatment_col, covariates)
+
+    # Add propensity scores to the original DataFrame
+    data['propensity_score'] = propensity_scores
+
+    # Create strata based on propensity scores
+    data['stratum'] = pd.qcut(data['propensity_score'], q=num_strata, labels=False)
+
+    # Display the stratum distribution
+    print("Stratum Distribution:")
+    print(data.groupby(['stratum', treatment_col]).size())
+
+    return data
+
+# Example usage:
+# stratified_data = propensity_score_stratification(your_data, 'treatment_column', ['covariate1', 'covariate2'])
+def propensity_score_stratification(data, treatment_col, covariates, num_strata=5):
+    """
+    Perform propensity score stratification.
+
+    Parameters:
+    - data: DataFrame containing the data
+    - treatment_col: Name of the column indicating treatment/control status
+    - covariates: List of covariates used for propensity score calculation
+    - num_strata: Number of strata to create (default is 5)
+
+    Returns:
+    - stratified_data: DataFrame containing the stratified data
+    """
+
+    # Calculate propensity scores
+    propensity_scores = propensity_score(data, treatment_col, covariates)
+
+    # Add propensity scores to the original DataFrame
+    data['propensity_score'] = propensity_scores
+
+    # Create strata based on propensity scores
+    data['stratum'] = pd.qcut(data['propensity_score'], q=num_strata, labels=False)
+
+    # Display the stratum distribution
+    print("Stratum Distribution:")
+    print(data.groupby(['stratum', treatment_col]).size())
+
+    return data
+
+#df = pd.read_csv("https://docs.google.com/uc?id=1AQva5-vDlgBcM_Tv9yrO8yMYRfQJgqo_&export=download")
+#ate_ls_model(df,'w','y')
+#ate_ls_model(df,'w','y',hc_test=False)
+#ate_diff_mean(df,'w','y')
+#propensity_score(df,'w',['educ','polviews','age'])
+#ipw(df,'y','w',['age'])
+#aipw(df,'y','w',['educ','polviews','age'])
+#propensity_score_stratification(df, 'w', ['age','polviews'], num_strata=5)
